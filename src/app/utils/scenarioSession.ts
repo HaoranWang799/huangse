@@ -1,4 +1,5 @@
 export interface GeneratedScenario {
+  id?: string;
   title: string;
   subtitle: string;
   coverImage: string;

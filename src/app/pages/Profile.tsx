@@ -4,15 +4,19 @@ import {
   Download, Bluetooth, CreditCard, HelpCircle, LogOut, Gift 
 } from 'lucide-react';
 import { BottomNav } from '../components/BottomNav';
+import { loadAppData } from '../utils/appStore';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const appData = loadAppData();
+  const favoriteCount = appData.scenarios.filter((item) => item.favorite).length;
+  const downloadedCount = appData.scenarios.filter((item) => item.downloaded).length;
 
   const menuSections = [
     {
       title: '账户',
       items: [
-        { icon: Crown, label: '订阅管理', path: '/subscription', badge: 'Plus' },
+        { icon: Crown, label: '订阅管理', path: '/subscription', badge: appData.subscription.plan.toUpperCase() },
         { icon: Settings, label: '账户设置', path: '/settings' },
         { icon: Shield, label: '隐私与安全', path: '/privacy' },
       ],
@@ -20,8 +24,8 @@ export default function Profile() {
     {
       title: '内容',
       items: [
-        { icon: Heart, label: '收藏的场景', path: '/saved', count: 12 },
-        { icon: Download, label: '已下载模板', path: '/downloads', count: 8 },
+        { icon: Heart, label: '收藏的场景', path: '/saved', count: favoriteCount },
+        { icon: Download, label: '已下载模板', path: '/downloads', count: downloadedCount },
       ],
     },
     {
@@ -52,8 +56,8 @@ export default function Profile() {
           <div className="flex items-center gap-4 mb-6">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary via-accent to-primary" />
             <div className="flex-1">
-              <h1 className="text-2xl mb-1">Alex Rivera</h1>
-              <p className="text-sm text-muted-foreground">alex@email.com</p>
+              <h1 className="text-2xl mb-1">{appData.profile.name}</h1>
+              <p className="text-sm text-muted-foreground">{appData.profile.email}</p>
             </div>
           </div>
 
@@ -90,15 +94,15 @@ export default function Profile() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-card/50 backdrop-blur-sm rounded-xl p-3 border border-border text-center">
-              <div className="text-xl mb-1">24</div>
+              <div className="text-xl mb-1">{appData.stats.totalSessions}</div>
               <div className="text-xs text-muted-foreground">会话</div>
             </div>
             <div className="bg-card/50 backdrop-blur-sm rounded-xl p-3 border border-border text-center">
-              <div className="text-xl mb-1">12.5小时</div>
+              <div className="text-xl mb-1">{(appData.stats.totalMinutes / 60).toFixed(1)}小时</div>
               <div className="text-xs text-muted-foreground">总时长</div>
             </div>
             <div className="bg-card/50 backdrop-blur-sm rounded-xl p-3 border border-border text-center">
-              <div className="text-xl mb-1">7</div>
+              <div className="text-xl mb-1">{appData.stats.streakDays}</div>
               <div className="text-xs text-muted-foreground">连续天数</div>
             </div>
           </div>

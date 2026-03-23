@@ -5,9 +5,13 @@ import {
 } from 'lucide-react';
 import { BottomNav } from '../components/BottomNav';
 import { CompanionCard } from '../components/CompanionCard';
+import { getPlanLimits, getRemainingGenerations, loadAppData } from '../utils/appStore';
 
 export default function Home() {
   const navigate = useNavigate();
+  const appData = loadAppData();
+  const planLimits = getPlanLimits(appData.subscription.plan);
+  const remaining = getRemainingGenerations(appData);
 
   const quickActions = [
     { icon: Sparkles, label: '创建场景', path: '/create', gradient: 'from-primary to-accent' },
@@ -50,7 +54,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-sm text-muted-foreground mb-1">欢迎回来</p>
-            <h1 className="text-2xl">你好，Alex</h1>
+            <h1 className="text-2xl">你好，{appData.profile.name}</h1>
           </div>
           <button 
             onClick={() => navigate('/profile')}
@@ -66,9 +70,11 @@ export default function Home() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Crown className="w-5 h-5 text-primary" />
-                <span className="font-medium">Free 版本</span>
+                <span className="font-medium">{appData.subscription.plan.toUpperCase()} 版本</span>
               </div>
-              <p className="text-sm text-muted-foreground">本月剩余 2/3 次免費生成</p>
+              <p className="text-sm text-muted-foreground">
+                {remaining === null ? '本月不限生成次数' : `本月剩余 ${remaining} 次生成`}
+              </p>
             </div>
             <button 
               onClick={() => navigate('/subscription')}
@@ -79,7 +85,14 @@ export default function Home() {
             </button>
           </div>
           <div className="h-2 bg-secondary rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-primary to-accent w-1/3 transition-all" />
+            <div
+              className="h-full bg-gradient-to-r from-primary to-accent transition-all"
+              style={{
+                width: remaining === null || planLimits.maxGenerations === null
+                  ? '100%'
+                  : `${Math.max(0, (remaining / planLimits.maxGenerations) * 100)}%`,
+              }}
+            />
           </div>
           <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
             <Zap className="w-3 h-3" />
@@ -191,15 +204,15 @@ export default function Home() {
         <h2 className="text-xl mb-4">本周统计</h2>
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-card rounded-xl p-4 border border-border text-center">
-            <div className="text-2xl mb-1">3</div>
+            <div className="text-2xl mb-1">{appData.stats.totalSessions}</div>
             <div className="text-xs text-muted-foreground">次会话</div>
           </div>
           <div className="bg-card rounded-xl p-4 border border-border text-center">
-            <div className="text-2xl mb-1">45</div>
+            <div className="text-2xl mb-1">{appData.stats.totalMinutes}</div>
             <div className="text-xs text-muted-foreground">分钟</div>
           </div>
           <div className="bg-card rounded-xl p-4 border border-border text-center">
-            <div className="text-2xl mb-1">2</div>
+            <div className="text-2xl mb-1">{remaining === null ? '∞' : remaining}</div>
             <div className="text-xs text-muted-foreground">次免费剩余</div>
           </div>
         </div>

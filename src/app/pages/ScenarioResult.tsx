@@ -1,6 +1,8 @@
+import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { ArrowLeft, Play, Heart, Share2, Download, Zap, Volume2, Clock, Sparkles, Bluetooth } from 'lucide-react';
 import { loadGeneratedScenario, type GeneratedScenario } from '../utils/scenarioSession';
+import { incrementScenarioPlay, updateScenarioFlags, loadAppData } from '../utils/appStore';
 
 export default function ScenarioResult() {
   const navigate = useNavigate();
@@ -35,6 +37,61 @@ export default function ScenarioResult() {
   const scenario = ((location.state as { scenario?: GeneratedScenario } | null)?.scenario)
     || loadGeneratedScenario()
     || fallbackScenario;
+
+  const matchedRecord = useMemo(() => {
+    if (scenario.id) {
+      return loadAppData().scenarios.find((item) => item.id === scenario.id) || null;
+    }
+    return null;
+  }, [scenario.id]);
+
+  const [isFavorite, setIsFavorite] = useState(Boolean(matchedRecord?.favorite));
+  const [isDownloaded, setIsDownloaded] = useState(Boolean(matchedRecord?.downloaded));
+
+  const handleStart = () => {
+    if (scenario.id) {
+      incrementScenarioPlay(scenario.id);
+    }
+    navigate('/hardware', { state: { scenario } });
+  };
+
+  const handleFavorite = () => {
+    if (!scenario.id) return;
+    const updated = updateScenarioFlags(scenario.id, { favorite: !isFavorite });
+    if (updated) {
+      setIsFavorite(updated.favorite);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!scenario.id) return;
+    const updated = updateScenarioFlags(scenario.id, { downloaded: !isDownloaded });
+    if (updated) {
+      setIsDownloaded(updated.downloaded);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareText = `${scenario.title} - ${scenario.subtitle}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: scenario.title,
+          text: shareText,
+        });
+        return;
+      } catch {
+        // ignore and fallback to clipboard
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareText);
+      window.alert('已复制分享文案到剪贴板。');
+    } catch {
+      window.alert('当前环境不支持自动复制，请手动分享。');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-white pb-24">
@@ -192,7 +249,7 @@ export default function ScenarioResult() {
         <div className="space-y-3">
           {/* 主操作按钮 */}
           <button
-            onClick={() => navigate('/hardware', { state: { scenario } })}
+            onClick={handleStart}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-accent text-white flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-primary/30"
           >
             <Play className="w-5 h-5" />
@@ -201,15 +258,15 @@ export default function ScenarioResult() {
 
           {/* 次要操作 */}
           <div className="grid grid-cols-3 gap-3">
-            <button className="py-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors flex flex-col items-center gap-1">
+            <button onClick={handleFavorite} className="py-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors flex flex-col items-center gap-1">
               <Heart className="w-5 h-5" />
-              <span className="text-xs">收藏</span>
+              <span className="text-xs">{isFavorite ? '已收藏' : '收藏'}</span>
             </button>
-            <button className="py-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors flex flex-col items-center gap-1">
+            <button onClick={handleDownload} className="py-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors flex flex-col items-center gap-1">
               <Download className="w-5 h-5" />
-              <span className="text-xs">保存模板</span>
+              <span className="text-xs">{isDownloaded ? '已保存' : '保存模板'}</span>
             </button>
-            <button className="py-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors flex flex-col items-center gap-1">
+            <button onClick={handleShare} className="py-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors flex flex-col items-center gap-1">
               <Share2 className="w-5 h-5" />
               <span className="text-xs">分享</span>
             </button>

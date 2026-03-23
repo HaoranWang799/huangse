@@ -1,9 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Sparkles, Volume2, Zap, Crown, Loader2 } from 'lucide-react';
 import { BottomNav } from '../components/BottomNav';
 import { saveGeneratedScenario, type GeneratedScenario } from '../utils/scenarioSession';
 import { buildScenarioNarration } from '../utils/scenarioNarration';
+import {
+  addScenarioToLibrary,
+  canGenerateScenario,
+  getPlanLimits,
+  getRemainingGenerations,
+  loadAppData,
+} from '../utils/appStore';
 
 export default function CreateScenario() {
   const navigate = useNavigate();
@@ -13,6 +20,9 @@ export default function CreateScenario() {
   const [duration, setDuration] = useState(10);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
+  const [warningMessage, setWarningMessage] = useState('');
+  const [plan, setPlan] = useState<'free' | 'plus' | 'premium'>('free');
+  const [remainingGenerations, setRemainingGenerations] = useState<number | null>(3);
 
   // Prompt引导 - 角色类型
   const roleTypes = [
@@ -47,6 +57,12 @@ export default function CreateScenario() {
     { id: 'playful', label: '活泼', description: '轻快愉悦的声音', isPremium: true },
     { id: 'confident', label: '自信', description: '大胆果断的声音', isPremium: true },
   ];
+
+  useEffect(() => {
+    const data = loadAppData();
+    setPlan(data.subscription.plan);
+    setRemainingGenerations(getRemainingGenerations(data));
+  }, []);
 
   const toggleTag = (tagId: string) => {
     setSelectedTags(prev => 
@@ -102,17 +118,28 @@ export default function CreateScenario() {
   };
 
   const handleGenerate = () => {
+    const data = loadAppData();
+    const selectedVoiceMeta = voices.find((voice) => voice.id === selectedVoice);
+    const checkResult = canGenerateScenario(data, duration, Boolean(selectedVoiceMeta?.isPremium));
+    if (!checkResult.ok) {
+      setWarningMessage(checkResult.message || '当前条件下无法生成场景。');
+      return;
+    }
+
     const scenario = buildScenario();
-    saveGeneratedScenario(scenario);
+    const record = addScenarioToLibrary(scenario);
+    saveGeneratedScenario(record.scenario);
+    setRemainingGenerations(getRemainingGenerations(loadAppData()));
+    setWarningMessage('');
     setIsGenerating(true);
-    // 模拟AI生成过程
     setTimeout(() => {
       setIsGenerating(false);
-      navigate('/result', { state: { scenario } });
+      navigate('/result', { state: { scenario: record.scenario } });
     }, 2000);
   };
 
   const canGenerate = selectedTags.length > 0 && selectedVoice;
+  const limits = getPlanLimits(plan);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -179,7 +206,9 @@ export default function CreateScenario() {
               <Zap className="w-5 h-5 text-primary" />
               <div>
                 <p className="text-sm font-medium">Free 版本</p>
-                <p className="text-xs text-muted-foreground">本月剩余 2/3 次生成</p>
+                <p className="text-xs text-muted-foreground">
+                  {remainingGenerations === null ? '本月不限生成次数' : `本月剩余 ${remainingGenerations} 次生成`}
+                </p>
               </div>
             </div>
             <button 
@@ -335,16 +364,18 @@ export default function CreateScenario() {
             语音风格
           </label>
           <div className="space-y-2">
-            {voices.map((voice) => (
+            {voices.map((voice) => {
+              const disabledByPlan = Boolean(voice.isPremium) && !limits.allowPremiumVoices;
+              return (
               <button
                 key={voice.id}
                 onClick={() => setSelectedVoice(voice.id)}
-                disabled={voice.isPremium}
+                disabled={disabledByPlan}
                 className={`w-full p-4 rounded-xl border transition-all flex items-center justify-between ${
                   selectedVoice === voice.id
                     ? 'bg-primary/20 border-primary ring-2 ring-primary/30'
                     : 'bg-card border-border hover:border-primary/50'
-                } ${voice.isPremium ? 'opacity-60' : ''}`}
+                } ${disabledByPlan ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <div className="text-left">
                   <div className="flex items-center gap-2 mb-1">
@@ -360,7 +391,8 @@ export default function CreateScenario() {
                 </div>
                 <Volume2 className="w-5 h-5 text-muted-foreground" />
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -371,26 +403,35 @@ export default function CreateScenario() {
             <span className="text-xs text-muted-foreground">免费版限10分钟</span>
           </div>
           <div className="grid grid-cols-4 gap-2">
-            {[5, 10, 15, 30].map((mins) => (
+            {[5, 10, 15, 30].map((mins) => {
+              const disabledByPlan = mins > limits.maxDuration;
+              return (
               <button
                 key={mins}
                 onClick={() => setDuration(mins)}
-                disabled={mins > 10}
+                disabled={disabledByPlan}
                 className={`p-3 rounded-xl border transition-all ${
                   duration === mins
                     ? 'bg-primary/20 border-primary ring-2 ring-primary/30'
                     : 'bg-card border-border hover:border-primary/50'
-                } ${mins > 10 ? 'opacity-40 cursor-not-allowed' : ''}`}
+                } ${disabledByPlan ? 'opacity-40 cursor-not-allowed' : ''}`}
               >
                 <div className="font-medium">{mins}</div>
                 <div className="text-xs text-muted-foreground">分钟</div>
-                {mins > 10 && (
+                {disabledByPlan && (
                   <div className="text-[10px] text-primary mt-1">会员</div>
                 )}
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
+
+        {warningMessage && (
+          <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+            {warningMessage}
+          </div>
+        )}
 
         {/* Generate Button */}
         <button

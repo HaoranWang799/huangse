@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router';
 import { ArrowLeft, Check, Crown, Sparkles, Zap } from 'lucide-react';
+import { addDiamonds, loadAppData, setSubscriptionPlan } from '../utils/appStore';
 
 export default function Subscription() {
   const navigate = useNavigate();
+  const appData = loadAppData();
 
   const plans = [
     {
@@ -25,6 +27,7 @@ export default function Subscription() {
       gradient: 'from-muted to-muted',
       buttonText: '当前方案',
       disabled: true,
+      planId: 'free',
     },
     {
       name: 'Plus',
@@ -44,6 +47,7 @@ export default function Subscription() {
       buttonText: '升级至 Plus',
       icon: Sparkles,
       highlight: '最受欢迎 · 性价比之选',
+      planId: 'plus',
     },
     {
       name: 'Premium',
@@ -64,6 +68,7 @@ export default function Subscription() {
       buttonText: '升级至 Premium',
       icon: Crown,
       highlight: '极致体验 · 无限可能',
+      planId: 'premium',
     },
   ];
 
@@ -73,6 +78,35 @@ export default function Subscription() {
     { amount: 1200, price: 39.99, bonus: 200 },
     { amount: 3000, price: 89.99, bonus: 600 },
   ];
+
+  const handlePlanSelect = (planId: string) => {
+    if (planId === appData.subscription.plan) {
+      window.alert('当前已是该套餐。');
+      return;
+    }
+
+    if (planId !== 'free' && appData.paymentMethods.length === 0) {
+      window.alert('请先添加支付方式，再升级套餐。');
+      navigate('/payment');
+      return;
+    }
+
+    setSubscriptionPlan(planId as 'free' | 'plus' | 'premium');
+    window.alert(`已切换到 ${planId.toUpperCase()} 套餐。`);
+    window.location.reload();
+  };
+
+  const handleBuyDiamonds = (amount: number, bonus: number) => {
+    if (appData.paymentMethods.length === 0) {
+      window.alert('请先添加支付方式再购买钻石。');
+      navigate('/payment');
+      return;
+    }
+    const total = amount + bonus;
+    const newBalance = addDiamonds(total);
+    window.alert(`购买成功，已到账 ${total} 钻石。当前余额：${newBalance}`);
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -140,16 +174,17 @@ export default function Subscription() {
                 </div>
 
                 <button
-                  disabled={plan.disabled}
+                  disabled={plan.planId === appData.subscription.plan}
+                  onClick={() => handlePlanSelect(plan.planId)}
                   className={`w-full py-3 rounded-xl transition-all ${
-                    plan.disabled
+                    plan.planId === appData.subscription.plan
                       ? 'bg-secondary text-muted-foreground cursor-not-allowed'
                       : plan.popular
                       ? 'bg-gradient-to-r from-primary to-accent text-white hover:opacity-90'
                       : 'bg-card border-2 border-primary text-primary hover:bg-primary/10'
                   }`}
                 >
-                  {plan.buttonText}
+                  {plan.planId === appData.subscription.plan ? '当前方案' : plan.buttonText}
                 </button>
               </div>
             );
@@ -169,6 +204,7 @@ export default function Subscription() {
             {coinPackages.map((pkg) => (
               <div
                 key={pkg.amount}
+                onClick={() => handleBuyDiamonds(pkg.amount, pkg.bonus)}
                 className={`bg-card rounded-2xl p-4 border transition-all cursor-pointer hover:border-primary/50 ${
                   pkg.popular ? 'border-primary' : 'border-border'
                 }`}

@@ -1,8 +1,19 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Download } from 'lucide-react';
+import { loadAppData, updateScenarioFlags } from '../utils/appStore';
 
 export default function Downloads() {
   const navigate = useNavigate();
+  const downloadedScenarios = useMemo(
+    () => loadAppData().scenarios.filter((item) => item.downloaded),
+    [],
+  );
+
+  const handleRemoveDownload = (id: string) => {
+    updateScenarioFlags(id, { downloaded: false });
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -21,9 +32,35 @@ export default function Downloads() {
 
       {/* Content */}
       <div className="p-6">
-        <div className="space-y-4">
+        {downloadedScenarios.length === 0 ? (
           <p className="text-muted-foreground">您还没有下载任何模板</p>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            {downloadedScenarios.map((item) => (
+              <div key={item.id} className="rounded-2xl border border-border bg-card overflow-hidden">
+                <button
+                  onClick={() => navigate('/result', { state: { scenario: item.scenario } })}
+                  className="w-full text-left"
+                >
+                  <img src={item.scenario.coverImage} alt={item.scenario.title} className="h-40 w-full object-cover" />
+                  <div className="p-4">
+                    <h2 className="text-lg font-medium mb-1">{item.scenario.title}</h2>
+                    <p className="text-sm text-muted-foreground">{item.scenario.durationLabel} · {item.scenario.voice}</p>
+                  </div>
+                </button>
+                <div className="border-t border-border p-3">
+                  <button
+                    onClick={() => handleRemoveDownload(item.id)}
+                    className="flex items-center gap-2 text-sm text-destructive hover:opacity-80"
+                  >
+                    <Download className="h-4 w-4" />
+                    取消保存
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
