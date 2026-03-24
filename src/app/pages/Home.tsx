@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { 
   Sparkles, TrendingUp, Heart, Zap, ChevronRight, 
@@ -10,13 +9,7 @@ import { getPlanLimits, getRemainingGenerations, loadAppData } from '../utils/ap
 
 export default function Home() {
   const navigate = useNavigate();
-  const [appData, setAppData] = useState(loadAppData);
-
-  // Re-read localStorage every time this page mounts (navigating back from Create/Result)
-  useEffect(() => {
-    setAppData(loadAppData());
-  }, []);
-
+  const appData = loadAppData();
   const planLimits = getPlanLimits(appData.subscription.plan);
   const remaining = getRemainingGenerations(appData);
 

@@ -18,14 +18,11 @@ import {
   Dumbbell,
   Target,
   CheckCircle2,
-  QrCode,
-  ArrowLeft
+  QrCode
 } from 'lucide-react';
-import { useNavigate } from 'react-router';
 import { BottomNav } from '../components/BottomNav';
 
 export default function HealthData() {
-  const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
@@ -81,12 +78,6 @@ export default function HealthData() {
       {/* Header */}
       <header className="sticky top-0 bg-[#07070A]/80 backdrop-blur-lg border-b border-white/[0.05] z-40 py-4">
         <div className="max-w-[420px] mx-auto px-4 flex items-center justify-between">
-          <button 
-            onClick={() => navigate(-1)}
-            className="text-slate-400 hover:text-slate-200 transition-colors"
-          >
-            <ArrowLeft size={24} />
-          </button>
           <h1 className="text-xl font-medium tracking-wider text-slate-100 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-fuchsia-500 shadow-[0_0_8px_rgba(217,70,239,0.8)]"></span>
             你的她
