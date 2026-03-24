@@ -1,4 +1,4 @@
-import { Home, ShoppingBag, PlusCircle, Zap, User } from 'lucide-react';
+import { Home, ShoppingBag, PlusCircle, Zap, User, Heart } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 
 export function BottomNav() {
@@ -7,6 +7,7 @@ export function BottomNav() {
 
   const navItems = [
     { icon: Home, label: '首页', path: '/home' },
+    { icon: Heart, label: '健康', path: '/health' },
     { icon: Zap, label: '控制', path: '/hardware', highlight: true },
     { icon: PlusCircle, label: '创建', path: '/create' },
     { icon: ShoppingBag, label: '商城', path: '/explore' },

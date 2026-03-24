@@ -10,6 +10,7 @@ import HardwareControl from './pages/HardwareControl';
 import Explore from './pages/Explore';
 import Community from './pages/Community';
 import Insights from './pages/Insights';
+import HealthData from './pages/HealthData';
 import Subscription from './pages/Subscription';
 import Profile from './pages/Profile';
 import Referral from './pages/Referral';
@@ -69,6 +70,10 @@ export const router = createBrowserRouter([
   {
     path: '/insights',
     element: <Insights />,
+  },
+  {
+    path: '/health',
+    element: <HealthData />,
   },
   {
     path: '/subscription',
