@@ -21,6 +21,6 @@ export default defineConfig({
   assetsInclude: ['**/*.svg', '**/*.csv'],
 
   preview: {
-    allowedHosts: ['all'],
+    allowedHosts: true,
   },
 })
