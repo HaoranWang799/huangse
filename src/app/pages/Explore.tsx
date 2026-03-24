@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, SlidersHorizontal, TrendingUp, Star, Crown, Flame, Clock, Zap, Bluetooth, Play, Heart, Download, Share2, Sparkle } from 'lucide-react';
 import { BottomNav } from '../components/BottomNav';
+import { FilterPanel } from '../components/FilterPanel';
 
 export default function Explore() {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ export default function Explore() {
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedIntensity, setSelectedIntensity] = useState('all');
   const [selectedDuration, setSelectedDuration] = useState('all');
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
 
   const tabs = [
     { id: 'recommended', label: '推荐', icon: Star },
@@ -149,8 +151,19 @@ export default function Explore() {
                 className="w-full pl-12 pr-4 py-3 rounded-xl bg-card border border-border focus:border-primary outline-none transition-colors"
               />
             </div>
-            <button className="w-12 h-12 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors flex items-center justify-center">
-              <SlidersHorizontal className="w-5 h-5" />
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`w-12 h-12 rounded-xl border transition-all flex items-center justify-center ${
+                isFilterOpen
+                  ? 'bg-primary/20 border-primary text-primary'
+                  : 'bg-card border-border hover:border-primary/50'
+              }`}
+            >
+              <SlidersHorizontal
+                className={`w-5 h-5 transition-transform duration-300 ${
+                  isFilterOpen ? 'rotate-180' : 'rotate-0'
+                }`}
+              />
             </button>
           </div>
 
@@ -179,7 +192,8 @@ export default function Explore() {
 
       <div className="p-6 space-y-6">
         {/* 筛选区域 */}
-        <div className="space-y-4">
+        <FilterPanel isOpen={isFilterOpen}>
+          <div className="space-y-4">
           {/* 角色筛选 */}
           <div>
             <p className="text-sm text-muted-foreground mb-2">角色类型</p>
@@ -239,7 +253,8 @@ export default function Explore() {
               ))}
             </div>
           </div>
-        </div>
+          </div>
+        </FilterPanel>
 
         {/* 结果统计 */}
         <div className="flex items-center justify-between">
