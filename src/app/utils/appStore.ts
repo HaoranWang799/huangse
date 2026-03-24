@@ -104,7 +104,10 @@ function safeLocalStorageSet(key: string, value: string): void {
 
 export function loadAppData(): AppData {
   const raw = safeLocalStorageGet(STORAGE_KEY);
-  if (!raw) return defaultData;
+  if (!raw) {
+    // Return a deep copy to prevent accidental mutation of the module-level defaultData object
+    return JSON.parse(JSON.stringify(defaultData)) as AppData;
+  }
 
   try {
     const parsed = JSON.parse(raw) as Partial<AppData>;
