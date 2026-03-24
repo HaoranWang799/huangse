@@ -1,6 +1,18 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Outlet } from 'react-router';
+import AppHeader from './components/AppHeader';
 import Onboarding from './pages/Onboarding';
 import Login from './pages/Login';
+
+function Layout() {
+  return (
+    <div className="flex flex-col h-screen">
+      <AppHeader />
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <Outlet />
+      </div>
+    </div>
+  );
+}
 import Home from './pages/Home';
 import CreateScenario from './pages/CreateScenario';
 import ScenarioResult from './pages/ScenarioResult';
@@ -24,10 +36,6 @@ import NotFound from './pages/NotFound';
 
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Home />,
-  },
-  {
     path: '/onboarding',
     element: <Onboarding />,
   },
@@ -36,83 +44,92 @@ export const router = createBrowserRouter([
     element: <Login />,
   },
   {
-    path: '/home',
-    element: <Home />,
-  },
-  {
-    path: '/create',
-    element: <CreateScenario />,
-  },
-  {
-    path: '/result',
-    element: <ScenarioResult />,
-  },
-  {
-    path: '/session',
-    element: <ImmersiveSession />,
-  },
-  {
-    path: '/device',
-    element: <DeviceConnect />,
-  },
-  {
-    path: '/hardware',
-    element: <HardwareControl />,
-  },
-  {
-    path: '/explore',
-    element: <Explore />,
-  },
-  {
-    path: '/community',
-    element: <Community />,
-  },
-  {
-    path: '/insights',
-    element: <Insights />,
-  },
-  {
-    path: '/health',
-    element: <HealthData />,
-  },
-  {
-    path: '/subscription',
-    element: <Subscription />,
-  },
-  {
-    path: '/profile',
-    element: <Profile />,
-  },
-  {
-    path: '/settings',
-    element: <Settings />,
-  },
-  {
-    path: '/privacy',
-    element: <Privacy />,
-  },
-  {
-    path: '/saved',
-    element: <Saved />,
-  },
-  {
-    path: '/downloads',
-    element: <Downloads />,
-  },
-  {
-    path: '/payment',
-    element: <Payment />,
-  },
-  {
-    path: '/referral',
-    element: <Referral />,
-  },
-  {
-    path: '/help',
-    element: <Help />,
-  },
-  {
-    path: '*',
-    element: <NotFound />,
+    element: <Layout />,
+    children: [
+      {
+        path: '/',
+        element: <Home />,
+      },
+      {
+        path: '/home',
+        element: <Home />,
+      },
+      {
+        path: '/create',
+        element: <CreateScenario />,
+      },
+      {
+        path: '/result',
+        element: <ScenarioResult />,
+      },
+      {
+        path: '/session',
+        element: <ImmersiveSession />,
+      },
+      {
+        path: '/device',
+        element: <DeviceConnect />,
+      },
+      {
+        path: '/hardware',
+        element: <HardwareControl />,
+      },
+      {
+        path: '/explore',
+        element: <Explore />,
+      },
+      {
+        path: '/community',
+        element: <Community />,
+      },
+      {
+        path: '/insights',
+        element: <Insights />,
+      },
+      {
+        path: '/health',
+        element: <HealthData />,
+      },
+      {
+        path: '/subscription',
+        element: <Subscription />,
+      },
+      {
+        path: '/profile',
+        element: <Profile />,
+      },
+      {
+        path: '/settings',
+        element: <Settings />,
+      },
+      {
+        path: '/privacy',
+        element: <Privacy />,
+      },
+      {
+        path: '/saved',
+        element: <Saved />,
+      },
+      {
+        path: '/downloads',
+        element: <Downloads />,
+      },
+      {
+        path: '/payment',
+        element: <Payment />,
+      },
+      {
+        path: '/referral',
+        element: <Referral />,
+      },
+      {
+        path: '/help',
+        element: <Help />,
+      },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
+    ],
   },
 ]);
